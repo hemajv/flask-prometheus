@@ -15,6 +15,8 @@ IN_PROGRESS = Gauge('http_requests_inprogress', 'Number of in progress HTTP requ
 # A histogram to measure the latency of the HTTP requests
 TIMINGS = Histogram('http_request_duration_seconds', 'HTTP request latency (seconds)')
 
+PACKAGES_NEW = Gauge('packages_added', 'Packages newly added')
+
 
 # Standard Flask route stuff.
 @app.route('/')
@@ -26,6 +28,19 @@ def hello_world():
     REQUESTS.labels(method='GET', endpoint="/", status_code=200).inc()  # Increment the counter
     return 'Hello, World!'
 
+# Note I'm intentionally failing occasionally to simulate a flakey service.
+@app.route('/slow')
+@TIMINGS.time()
+@IN_PROGRESS.track_inprogress()
+def slow_request():
+    v = random.expovariate(1.0 / 1.3)
+    if v > 3:
+        REQUESTS.labels(method='GET', endpoint="/slow", status_code=500).inc()
+        abort(500)
+    time.sleep(v)
+    REQUESTS.labels(method='GET', endpoint="/slow", status_code=200).inc()
+    return render_template_string('<h1>Wow, that took {{v}} s!</h1>', v=v)
+
 
 @app.route('/hello/<name>')
 @IN_PROGRESS.track_inprogress()
@@ -33,6 +48,14 @@ def hello_world():
 def index(name):
     REQUESTS.labels(method='GET', endpoint="/hello/<name>", status_code=200).inc()
     return render_template_string('<b>Hello {{name}}</b>!', name=name)
+
+@app.route('/packages')
+def countpkg():
+	for i in range(10):
+		packages_added = True
+		if packages_added:
+			PACKAGES_NEW(method='GET', endpoint="/packages", status_code=500).inc()
+	return render_template_string('Counting packages....')
 
 
 @app.route('/metrics')
