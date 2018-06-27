@@ -54,7 +54,7 @@ def countpkg():
 	for i in range(10):
 		packages_added = True
 		if packages_added:
-			PACKAGES_NEW(method='GET', endpoint="/packages", status_code=200).inc()
+			PACKAGES_NEW.inc()
 	return render_template_string('Counting packages....')
 
 
