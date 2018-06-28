@@ -1,0 +1,135 @@
+apiVersion: v1
+kind: Template
+
+labels:
+  application: prometheus-flask
+
+metadata:
+  name: prometheus-flask
+
+parameters:
+- name: APPLICATION_NAME
+  value: 'prometheus-flask'
+  required: true
+- name: GIT_URI
+  value: 'https://github.com/hemajv/flask-prometheus.git'
+  required: true
+
+objects:
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    name: ${APPLICATION_NAME}
+    labels:
+      app: ${APPLICATION_NAME}
+  spec:
+    dockerImageRepository: ${APPLICATION_NAME}
+    tags:
+    - name: latest
+    lookupPolicy:
+      local: true
+
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: ${APPLICATION_NAME}
+    labels:
+      app: ${APPLICATION_NAME}
+  spec:
+    resources:
+      limits:
+        memory: 1Gi
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${APPLICATION_NAME}:latest
+    source:
+      git:
+        uri: ${GIT_URI}
+      type: Git
+    strategy:
+      type: Source
+      sourceStrategy:
+        env:
+        - name: APP_FILE
+          value: 'app.py'
+        - name: GIT_SSL_NO_VERIFY
+          value: 'true'
+        forcePull: true
+        from:
+          kind: DockerImage
+          name: 'docker.io/centos/python-36-centos7:latest'
+    triggers:
+    - imageChange: {}
+      type: ImageChange
+    - type: ConfigChange
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${APPLICATION_NAME}
+    labels:
+      deploymentConfig: ${APPLICATION_NAME}
+      app: ${APPLICATION_NAME}
+  spec:
+    replicas: 1
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}
+    strategy:
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentConfig: ${APPLICATION_NAME}
+          app: ${APPLICATION_NAME}
+      spec:
+        containers:
+        - envFrom:
+            - secretRef:
+                name: ${APPLICATION_NAME}
+          image: ${APPLICATION_NAME}
+          imagePullPolicy: IfNotPresent
+          name: ${APPLICATION_NAME}
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        serviceAccount: insights-ds-analysis
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+          - ${APPLICATION_NAME}
+        from:
+          kind: ImageStreamTag
+          name: ${APPLICATION_NAME}:latest
+      type: ImageChange
+    - type: ConfigChange
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${APPLICATION_NAME}
+    labels:
+      app: ${APPLICATION_NAME}
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      deploymentConfig: ${APPLICATION_NAME}
+
+- apiVersion: v1
+  kind: Route
+  metadata:
+    labels:
+      app: ${APPLICATION_NAME}
+    name: ${APPLICATION_NAME}
+  spec:
+    port:
+      targetPort: 8080-tcp
+    to:
+      kind: Service
+      name: ${APPLICATION_NAME}
