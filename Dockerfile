@@ -5,4 +5,4 @@ FROM centos
 #COPY . .
 
 
-CMD [ "python", "./app.py" ]
+CMD [ "python", "/app.py" ]
