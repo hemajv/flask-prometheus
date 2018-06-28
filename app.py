@@ -16,7 +16,7 @@ IN_PROGRESS = Gauge('http_requests_inprogress', 'Number of in progress HTTP requ
 TIMINGS = Histogram('http_request_duration_seconds', 'HTTP request latency (seconds)')
 
 # A gauge to count the number of packages newly added
-PACKAGES_NEW = Gauge('packages_added', 'Packages newly added')
+PACKAGES_NEW = Gauge('packages_newly_added', 'Packages newly added')
 
 
 # Standard Flask route stuff.
