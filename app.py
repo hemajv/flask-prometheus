@@ -55,4 +55,4 @@ def metrics():
 
 
 if __name__ == "__main__":
-    app.run(host='http://prometheus-flask-mhild-test.cloud.upshift.engineering.redhat.com/')
+    app.run(host='0.0.0.0', port='8080')
