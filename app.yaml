@@ -65,48 +65,6 @@ objects:
     - type: ConfigChange
 
 - apiVersion: v1
-  kind: DeploymentConfig
-  metadata:
-    name: ${APPLICATION_NAME}
-    labels:
-      deploymentConfig: ${APPLICATION_NAME}
-      app: ${APPLICATION_NAME}
-  spec:
-    replicas: 1
-    selector:
-      deploymentConfig: ${APPLICATION_NAME}
-    strategy:
-      type: Rolling
-    template:
-      metadata:
-        labels:
-          deploymentConfig: ${APPLICATION_NAME}
-          app: ${APPLICATION_NAME}
-      spec:
-        containers:
-        - envFrom:
-            - secretRef:
-                name: ${APPLICATION_NAME}
-          image: ${APPLICATION_NAME}
-          imagePullPolicy: IfNotPresent
-          name: ${APPLICATION_NAME}
-          resources: {}
-          terminationMessagePath: /dev/termination-log
-        dnsPolicy: ClusterFirst
-        restartPolicy: Always
-        serviceAccount: insights-ds-analysis
-    triggers:
-    - imageChangeParams:
-        automatic: true
-        containerNames:
-          - ${APPLICATION_NAME}
-        from:
-          kind: ImageStreamTag
-          name: ${APPLICATION_NAME}:latest
-      type: ImageChange
-    - type: ConfigChange
-
-- apiVersion: v1
   kind: Service
   metadata:
     name: ${APPLICATION_NAME}
