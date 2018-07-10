@@ -32,7 +32,7 @@ We can then go to the OpenShift UI and see the new application we created. This 
 ## Navigate to view metrics
 To view the metrics, we open the browser and navigate to the URL created for your application.
 ```
-      https://<URL>/metrics
+      https://<Your application route URL>/metrics
 ```
 This is where all the Prometheus metrics are being populated.
 
