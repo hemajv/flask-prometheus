@@ -1,11 +1,19 @@
 import random
 import time
 import os
+import sys
 import bz2
+import argparse
 from flask import Flask, render_template_string, abort
 from prometheus_client import generate_latest, REGISTRY, Counter, Gauge, Histogram
 
 app = Flask(__name__)
+#Parsing the required arguments
+parser = argparse.ArgumentParser(description='Service metrics')
+parser.add_argument('--file', type=str, help='The filename of backup data to read from')
+
+args = parser.parse_args()
+
 
 # A counter to count the total number of HTTP requests
 REQUESTS = Counter('http_requests_total', 'Total HTTP Requests (count)', ['method', 'endpoint', 'status_code'])
@@ -48,7 +56,7 @@ def countpkg():
 
 @app.route('/prometheus')
 def metrics():
-	rootdir = '/home/hveeradh/Desktop/CEPH_PROM_BACKUP/prometheus-aiops-prod-prometheus-lts.cloud.upshift.engineering.redhat.com'
+	rootdir = args.file
 	for dirs in os.listdir(rootdir):
 		if not dirs.endswith("_count") and not dirs.endswith("_sum"):
 			for dir2 in os.listdir(rootdir + '/' + dirs):
