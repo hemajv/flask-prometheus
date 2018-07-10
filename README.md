@@ -17,7 +17,7 @@ app.yaml is the template file (save it locally on your system) from which we can
 ```
       oc login
 ```
-Save the app.yaml (template file locally on your system)
+Save the app.yaml template file locally on your system
 ## We now create the template for OpenShift to use as follows
 ```
       oc create -f app.yaml
