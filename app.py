@@ -65,7 +65,6 @@ def metrics():
 						text = f.read()
 	return render_template_string(text)
 
-
 @app.route('/metrics')
 @IN_PROGRESS.track_inprogress()
 @TIMINGS.time()
