@@ -48,18 +48,6 @@ def countpkg():
 	return render_template_string('Counting packages....')
 
 @app.route('/metrics')
-def metrics():
-	rootdir = sys.argv[1]
-	for dirs in os.listdir(rootdir):
-		if not dirs.endswith("_count") and not dirs.endswith("_sum"):
-			for dir2 in os.listdir(rootdir + '/' + dirs):
-				if dir2.endswith("bz2"):
-					with bz2.open(rootdir + '/' + dirs + '/' + dir2, 'rt') as f:
-						text = f.read()
-	return render_template_string(text)
-
-
-@app.route('/prometheus')
 @IN_PROGRESS.track_inprogress()
 @TIMINGS.time()
 def display():
