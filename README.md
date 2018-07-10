@@ -26,7 +26,10 @@ Save the app.yaml template file locally on your system
 ```
       oc new-app <template-name>
 ```
-
+## You can view all templates exisiting/created for your project
+```
+      oc get templates
+```
 We can then go to the OpenShift UI and see the new application we created. This application has routes setup to service and view the Prometheus metrics.
 
 ## Navigate to view metrics
