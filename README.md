@@ -1,12 +1,12 @@
 # flask-prometheus
 Flask application setup with Prometheus to export metrics
 
-# Deploying the application and running locally on your system
-## Building the docker image
+## Deploying the application and running locally on your system
+### Building the docker image
 ```
       docker build . -t flask-prom
 ```
-## Running the container 
+### Running the container 
 ```
       docker run -p 5000:5000 flask-prom
 ```
