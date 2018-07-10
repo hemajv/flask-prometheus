@@ -22,5 +22,13 @@ app.yaml is the template file (save it locally on your system) from which we can
       oc new-app <template-name>
 ```
 
-We can then go to the OpenShift UI and see the new application we created. This application has routes setup to service and run the flask application.
+We can then go to the OpenShift UI and see the new application we created. This application has routes setup to service and view the Prometheus metrics.
 
+## Navigate to view metrics
+To view the metrics, we open the browser and navigate to the URL created for your application.
+```
+      https://<URL>/metrics
+```
+This is where all the Prometheus metrics are being populated.
+
+You can specify your own routes in the flask application and navigate to the pages in the browser accordingly to view the contents. 
