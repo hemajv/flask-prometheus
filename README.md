@@ -26,7 +26,7 @@ Save the app.yaml template file locally on your system
 ```
       oc new-app <template-name>
 ```
-## You can view all templates exisiting/created for your project
+## You can view all templates existing/created for your project
 ```
       oc get templates
 ```
