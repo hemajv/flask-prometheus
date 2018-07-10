@@ -47,7 +47,7 @@ def countpkg():
 			PACKAGES_NEW.inc()
 	return render_template_string('Counting packages....')
 
-@app.route('/prometheus')
+@app.route('/metrics')
 def metrics():
 	rootdir = sys.argv[1]
 	for dirs in os.listdir(rootdir):
@@ -59,7 +59,7 @@ def metrics():
 	return render_template_string(text)
 
 
-@app.route('/metrics')
+@app.route('/prometheus')
 @IN_PROGRESS.track_inprogress()
 @TIMINGS.time()
 def display():
