@@ -1,6 +1,7 @@
 import random
 import time
 import os
+import sys
 import bz2
 from flask import Flask, render_template_string, abort
 from prometheus_client import generate_latest, REGISTRY, Counter, Gauge, Histogram
@@ -48,7 +49,7 @@ def countpkg():
 
 @app.route('/prometheus')
 def metrics():
-	rootdir = '/home/hveeradh/Desktop/CEPH_PROM_BACKUP/prometheus-aiops-prod-prometheus-lts.cloud.upshift.engineering.redhat.com'
+	rootdir = sys.argv[1]
 	for dirs in os.listdir(rootdir):
 		if not dirs.endswith("_count") and not dirs.endswith("_sum"):
 			for dir2 in os.listdir(rootdir + '/' + dirs):
