@@ -12,8 +12,12 @@ Flask application setup with Prometheus to export metrics
 
 # Running the application on OpenShift
 app.yaml is the template file (save it locally on your system) from which we can deploy our flask application (app.py) and have it running on OpenShift. 
-
-## We first create the template
+## Login to OpenShift and enter your credentials
+```
+      oc login
+```
+Save the app.yaml (template file locally on your system)
+## We now create the template for OpenShift to use as follows
 ```
       oc create -f app.yaml
 ```
