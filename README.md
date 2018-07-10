@@ -9,3 +9,6 @@ Flask application setup with Prometheus to export metrics
 ```
       docker run -p 5000:5000 flask-prom
 ```
+
+## Running the application on OpenShift
+
