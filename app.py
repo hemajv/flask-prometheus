@@ -8,12 +8,6 @@ from flask import Flask, render_template_string, abort
 from prometheus_client import generate_latest, REGISTRY, Counter, Gauge, Histogram
 
 app = Flask(__name__)
-#Parsing the required arguments
-parser = argparse.ArgumentParser(description='Service metrics')
-parser.add_argument('--file', type=str, help='The filename of backup data to read from')
-
-args = parser.parse_args()
-
 
 # A counter to count the total number of HTTP requests
 REQUESTS = Counter('http_requests_total', 'Total HTTP Requests (count)', ['method', 'endpoint', 'status_code'])
@@ -46,6 +40,7 @@ def index(name):
     REQUESTS.labels(method='GET', endpoint="/hello/<name>", status_code=200).inc()
     return render_template_string('<b>Hello {{name}}</b>!', name=name)
 
+
 @app.route('/packages')
 def countpkg():
 	for i in range(10):
@@ -54,16 +49,6 @@ def countpkg():
 			PACKAGES_NEW.inc()
 	return render_template_string('Counting packages....')
 
-@app.route('/prometheus')
-def metrics():
-	rootdir = args.file
-	for dirs in os.listdir(rootdir):
-		if not dirs.endswith("_count") and not dirs.endswith("_sum"):
-			for dir2 in os.listdir(rootdir + '/' + dirs):
-				if dir2.endswith("bz2"):
-					with bz2.open(rootdir + '/' + dirs + '/' + dir2, 'rt') as f:
-						text = f.read()
-	return render_template_string(text)
 
 @app.route('/metrics')
 @IN_PROGRESS.track_inprogress()
@@ -71,6 +56,7 @@ def metrics():
 def display():
 	REQUESTS.labels(method='GET', endpoint="/metrics", status_code=200).inc()
 	return generate_latest(REGISTRY)
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
