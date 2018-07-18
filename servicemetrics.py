@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser(description='Service metrics')
 parser.add_argument('--file', type=str, help='The filename of predicted values to read from')
 
 args = parser.parse_args()
+#Read the JSON file
 data = pd.read_json(args.file)
 
 #A gauge set for the predicted values
@@ -31,10 +32,10 @@ TIMINGS = Histogram('http_request_duration_seconds', 'HTTP request latency (seco
 # A gauge to count the number of packages newly added
 PACKAGES_NEW = Gauge('packages_newly_added', 'Packages newly added')
 
-#Read the JSON file
+#Converting the columns of the pandas dataframe to a list
 yhatupper = data['yhat_upper'].tolist()
 yhatlower = data['yhat_lower'].tolist()
-yhat = data['yhat'].values
+yhat = data['yhat'].tolist()
 
 # Standard Flask route stuff.
 @app.route('/')
@@ -64,7 +65,8 @@ def countpkg():
 
 @app.route('/metrics')
 def metrics():
-	PREDICTED_VALUES.labels(yhat_lower=yhatlower, yhat_upper=yhatupper).set(yhat[0])
+	for i in range(len(data)):
+		PREDICTED_VALUES.labels(yhat_lower=yhatlower[i], yhat_upper=yhatupper[i]).set(yhat[i])
 	return generate_latest(REGISTRY)
 
 @app.route('/prometheus')
