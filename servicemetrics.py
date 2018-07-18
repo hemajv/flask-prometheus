@@ -3,17 +3,21 @@ import time
 import os
 import sys
 import bz2
+import pandas as pd
 import argparse
 from flask import Flask, render_template_string, abort
-from prometheus_client import generate_latest, REGISTRY, Counter, Gauge, Histogram
+from prometheus_client import CollectorRegistry, generate_latest, REGISTRY, Counter, Gauge, Histogram
 
 app = Flask(__name__)
 #Parsing the required arguments
 parser = argparse.ArgumentParser(description='Service metrics')
-parser.add_argument('--file', type=str, help='The filename of backup data to read from')
+parser.add_argument('--file', type=str, help='The filename of predicted values to read from')
 
 args = parser.parse_args()
+data = pd.read_json(args.file)
 
+#A gauge set for the predicted values
+PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['yaht_lower', 'yhat_upper'])
 
 # A counter to count the total number of HTTP requests
 REQUESTS = Counter('http_requests_total', 'Total HTTP Requests (count)', ['method', 'endpoint', 'status_code'])
@@ -27,6 +31,10 @@ TIMINGS = Histogram('http_request_duration_seconds', 'HTTP request latency (seco
 # A gauge to count the number of packages newly added
 PACKAGES_NEW = Gauge('packages_newly_added', 'Packages newly added')
 
+#Read the JSON file
+yhatupper = data['yhat_upper'].tolist()
+yhatlower = data['yhat_lower'].tolist()
+yhat = data['yhat'].values
 
 # Standard Flask route stuff.
 @app.route('/')
@@ -56,14 +64,8 @@ def countpkg():
 
 @app.route('/metrics')
 def metrics():
-	rootdir = args.file
-	for dirs in os.listdir(rootdir):
-		if not dirs.endswith("_count") and not dirs.endswith("_sum"):
-			for dir2 in os.listdir(rootdir + '/' + dirs):
-				if dir2.endswith("bz2"):
-					with bz2.open(rootdir + '/' + dirs + '/' + dir2, 'rt') as f:
-						text = f.read()
-	return render_template_string(text)
+	PREDICTED_VALUES.labels(yhat_lower=yhatlower, yhat_upper=yhatupper).set(yhat[0])
+	return generate_latest(REGISTRY)
 
 @app.route('/prometheus')
 @IN_PROGRESS.track_inprogress()
