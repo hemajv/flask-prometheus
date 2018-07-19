@@ -18,7 +18,7 @@ args = parser.parse_args()
 data = pd.read_json(args.file)
 
 #A gauge set for the predicted values
-PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['yaht_lower', 'yhat_upper'])
+PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['yaht_lower', 'yhat_upper', 'time_stamp'])
 
 # A counter to count the total number of HTTP requests
 REQUESTS = Counter('http_requests_total', 'Total HTTP Requests (count)', ['method', 'endpoint', 'status_code'])
@@ -36,6 +36,7 @@ PACKAGES_NEW = Gauge('packages_newly_added', 'Packages newly added')
 yhatupper = data['yhat_upper'].tolist()
 yhatlower = data['yhat_lower'].tolist()
 yhat = data['yhat'].tolist()
+timestamp = data['timestamp']
 
 # Standard Flask route stuff.
 @app.route('/')
