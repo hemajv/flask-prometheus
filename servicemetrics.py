@@ -6,6 +6,7 @@ import bz2
 import pandas as pd
 import argparse
 from flask import Flask, render_template_string, abort
+from datetime import datetime
 from prometheus_client import CollectorRegistry, generate_latest, REGISTRY, Counter, Gauge, Histogram
 
 app = Flask(__name__)
@@ -32,11 +33,33 @@ TIMINGS = Histogram('http_request_duration_seconds', 'HTTP request latency (seco
 # A gauge to count the number of packages newly added
 PACKAGES_NEW = Gauge('packages_newly_added', 'Packages newly added')
 
-#Converting the columns of the pandas dataframe to a list
-yhatupper = data['yhat_upper'].tolist()
-yhatlower = data['yhat_lower'].tolist()
-yhat = data['yhat'].tolist()
+#Store the different columns of the pandas dataframe
+yhatupper = data['yhat_upper']
+yhatlower = data['yhat_lower']
+yhat = data['yhat']
 timestamp = data['timestamp']
+
+#Create a new list to store the converted pandas timestamp format as datetime 
+new_timestamp = []
+
+#Find the current time
+current_time = datetime.now()
+print("The current time is:")
+print(current_time)
+
+#convert pandas-timestamp to python-datetime format
+for i in range(len(timestamp)):
+        new_timestamp.append(timestamp[i].to_pydatetime())
+
+#Iterate to find the matching index of the predicted value with the current timestamp
+for i in range(len(new_timestamp)):
+        if (new_timestamp[i].year == current_time.year and new_timestamp[i].month==current_time.month and new_timestamp[i].day==current_time.day
+            and new_timestamp[i].hour==current_time.hour and new_timestamp[i].minute==current_time.minute):
+                index = i
+
+print("The matching index found:", index)
+#Set the Gauge with the predicted values of the index found
+PREDICTED_VALUES.labels(yhat_lower=yhatlower[index], yhat_upper=yhatupper[index], time_stamp=timestamp[index]).set(yhat[index])
 
 # Standard Flask route stuff.
 @app.route('/')
@@ -66,8 +89,6 @@ def countpkg():
 
 @app.route('/metrics')
 def metrics():
-	for i in range(len(data)):
-		PREDICTED_VALUES.labels(yhat_lower=yhatlower[i], yhat_upper=yhatupper[i]).set(yhat[i])
 	return generate_latest(REGISTRY)
 
 @app.route('/prometheus')
