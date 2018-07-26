@@ -37,25 +37,20 @@ PACKAGES_NEW = Gauge('packages_newly_added', 'Packages newly added')
 yhatupper = data['yhat_upper']
 yhatlower = data['yhat_lower']
 yhat = data['yhat']
+#Converting timestamp to Unix time
+data['timestamp'] = data['timestamp'].astype(int64) // 10 ** 9
 timestamp = data['timestamp']
+timestamp = timestamp.tolist()
 
-#Create a new list to store the converted pandas timestamp format as datetime 
-new_timestamp = []
-
-#Find the current time
-current_time = datetime.now()
-print("The current time is:")
+#Find the current timestamp
+current_time = datetime.now().timestamp()
+print("The current time is: \n")
 print(current_time)
 
-#convert pandas-timestamp to python-datetime format
-for i in range(len(timestamp)):
-        new_timestamp.append(timestamp[i].to_pydatetime())
-
-#Iterate to find the matching index of the predicted value with the current timestamp
-for i in range(len(new_timestamp)):
-        if (new_timestamp[i].year == current_time.year and new_timestamp[i].month==current_time.month and new_timestamp[i].day==current_time.day
-            and new_timestamp[i].hour==current_time.hour and new_timestamp[i].minute==current_time.minute):
-                index = i
+#converting to np.int64 type
+current_time = np.int64(current_time)
+#Find the index matching with the current timestamp
+index = timestamp.index(current_time)
 
 print("The matching index found:", index)
 #Set the Gauge with the predicted values of the index found
