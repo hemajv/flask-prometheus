@@ -48,7 +48,7 @@ data = data[~data.index.duplicated()]
 data = data.sort_values(by=['timestamp'])
 
 #A gauge set for the predicted values
-PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['yhat_lower', 'yhat_upper', 'time_stamp'])
+PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['value_type'])
 
 # A counter to count the total number of HTTP requests
 REQUESTS = Counter('http_requests_total', 'Total HTTP Requests (count)', ['method', 'endpoint', 'status_code'])
@@ -63,8 +63,8 @@ TIMINGS = Histogram('http_request_duration_seconds', 'HTTP request latency (seco
 PACKAGES_NEW = Gauge('packages_newly_added', 'Packages newly added')
 
 #Store the different columns of the pandas dataframe
-yhatupper = data['yhat_upper']
-yhatlower = data['yhat_lower']
+yhat_upper = data['yhat_upper']
+yhat_lower = data['yhat_lower']
 yhat = data['yhat']
 #Converting timestamp to Unix time
 print("Data Timestamp: \n",data['timestamp'].head())
@@ -87,7 +87,11 @@ index = data.index.get_loc(current_time, method='nearest')
 
 print("The matching index found:", index, "nearest_timestamp is: ", data.iloc[[index]])
 #Set the Gauge with the predicted values of the index found
-PREDICTED_VALUES.labels(yhat_lower=yhatlower[index], yhat_upper=yhatupper[index], time_stamp=timestamp[index]).set(yhat[index])
+PREDICTED_VALUES.labels(value_type='yhat').set(yhat[index])
+PREDICTED_VALUES.labels(value_type='yhat_upper').set(yhat_upper[index])
+PREDICTED_VALUES.labels(value_type='yhat_lower').set(yhat_lower[index])
+
+
 
 # Standard Flask route stuff.
 @app.route('/')
