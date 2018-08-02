@@ -79,7 +79,6 @@ print("The current time is: \n")
 print(current_time)
 
 
-
 # Standard Flask route stuff.
 @app.route('/')
 # Helper annotation to measure how long a method takes and save as a histogram metric.
