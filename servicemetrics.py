@@ -62,10 +62,6 @@ TIMINGS = Histogram('http_request_duration_seconds', 'HTTP request latency (seco
 # A gauge to count the number of packages newly added
 PACKAGES_NEW = Gauge('packages_newly_added', 'Packages newly added')
 
-#Store the different columns of the pandas dataframe
-yhat_upper = data['yhat_upper']
-yhat_lower = data['yhat_lower']
-yhat = data['yhat']
 #Converting timestamp to Unix time
 print("Data Timestamp: \n",data['timestamp'].head())
 timestamp = data['timestamp']
