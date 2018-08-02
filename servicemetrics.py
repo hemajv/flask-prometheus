@@ -88,6 +88,7 @@ def countpkg():
 			PACKAGES_NEW.inc()
 	return render_template_string('Counting packages....')
 
+
 @app.route('/metrics')
 def metrics():
     #Find the index matching with the current timestamp
@@ -101,12 +102,14 @@ def metrics():
     PREDICTED_VALUES.labels(value_type='yhat_lower', time_stamp=data['timestamp'][index]).set(data['yhat_lower'][index])
     return generate_latest(REGISTRY)
 
+
 @app.route('/prometheus')
 @IN_PROGRESS.track_inprogress()
 @TIMINGS.time()
 def display():
 	REQUESTS.labels(method='GET', endpoint="/metrics", status_code=200).inc()
 	return generate_latest(REGISTRY)
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
