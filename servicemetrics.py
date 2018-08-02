@@ -3,20 +3,49 @@ import time
 import os
 import sys
 import bz2
-import pandas as pd
+import pandas
 import argparse
 from flask import Flask, render_template_string, abort
 from datetime import datetime
 from prometheus_client import CollectorRegistry, generate_latest, REGISTRY, Counter, Gauge, Histogram
 
+# Scheduling stuff
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+import atexit
+
 app = Flask(__name__)
+
+# def job(current_time):
+#     # TODO: Replace this function with model training function and set up the correct IntervalTrigger time
+#     print("I'm pretend training the model.......... ",current_time)
+#     time.sleep(2)
+#
+# # Schedular schedules a background job that needs to be run regularly
+# scheduler = BackgroundScheduler()
+# scheduler.start()
+# scheduler.add_job(
+#     func=lambda: job(datetime.now()),
+#     trigger=IntervalTrigger(seconds=5),# change this to a different interval
+#     id='training_job',
+#     name='Train Prophet model every day regularly',
+#     replace_existing=True)
+# # Shut down the scheduler when exiting the app
+# atexit.register(lambda: scheduler.shutdown())
+
 #Parsing the required arguments
 parser = argparse.ArgumentParser(description='Service metrics')
-parser.add_argument('--file', type=str, help='The filename of predicted values to read from')
+parser.add_argument('--file', type=str, help='The filename of predicted values to read from', default="predictions.json")
 
 args = parser.parse_args()
 #Read the JSON file
-data = pd.read_json(args.file)
+data = pandas.read_json(args.file)
+print(data.head())
+
+# modify the DataFrame
+data = data.set_index(data['timestamp'])
+data = data[~data.index.duplicated()]
+data = data.sort_values(by=['timestamp'])
 
 #A gauge set for the predicted values
 PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['yhat_lower', 'yhat_upper', 'time_stamp'])
@@ -38,21 +67,25 @@ yhatupper = data['yhat_upper']
 yhatlower = data['yhat_lower']
 yhat = data['yhat']
 #Converting timestamp to Unix time
-data['timestamp'] = data['timestamp'].astype(int64) // 10 ** 9
+print("Data Timestamp: \n",data['timestamp'].head())
+# data['timestamp'] = data['timestamp'].astype(int64) // 10 ** 9
 timestamp = data['timestamp']
-timestamp = timestamp.tolist()
+print(data.head())
+
+print(data.tail())
+# timestamp = timestamp.tolist()
 
 #Find the current timestamp
-current_time = datetime.now().timestamp()
+current_time = datetime.now()
 print("The current time is: \n")
 print(current_time)
 
 #converting to np.int64 type
-current_time = np.int64(current_time)
+# current_time = np.int64(current_time)
 #Find the index matching with the current timestamp
-index = timestamp.index(current_time)
+index = data.index.get_loc(current_time, method='nearest')
 
-print("The matching index found:", index)
+print("The matching index found:", index, "nearest_timestamp is: ", data.iloc[[index]])
 #Set the Gauge with the predicted values of the index found
 PREDICTED_VALUES.labels(yhat_lower=yhatlower[index], yhat_upper=yhatupper[index], time_stamp=timestamp[index]).set(yhat[index])
 
@@ -95,3 +128,4 @@ def display():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
+    pass
