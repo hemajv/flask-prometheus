@@ -68,29 +68,25 @@ yhat_lower = data['yhat_lower']
 yhat = data['yhat']
 #Converting timestamp to Unix time
 print("Data Timestamp: \n",data['timestamp'].head())
-# data['timestamp'] = data['timestamp'].astype(int64) // 10 ** 9
 timestamp = data['timestamp']
 print(data.head())
 
 print(data.tail())
-# timestamp = timestamp.tolist()
 
 #Find the current timestamp
 current_time = datetime.now()
 print("The current time is: \n")
 print(current_time)
 
-#converting to np.int64 type
-# current_time = np.int64(current_time)
 #Find the index matching with the current timestamp
 index = data.index.get_loc(current_time, method='nearest')
 
 print("The matching index found:", index, "nearest_timestamp is: ", data.iloc[[index]])
 #Set the Gauge with the predicted values of the index found
+
 PREDICTED_VALUES.labels(value_type='yhat').set(yhat[index])
 PREDICTED_VALUES.labels(value_type='yhat_upper').set(yhat_upper[index])
 PREDICTED_VALUES.labels(value_type='yhat_lower').set(yhat_lower[index])
-
 
 
 # Standard Flask route stuff.
