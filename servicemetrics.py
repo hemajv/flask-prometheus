@@ -48,9 +48,7 @@ data = data[~data.index.duplicated()]
 data = data.sort_values(by=['timestamp'])
 
 #A gauge set for the predicted values
-PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['time_stamp'])
-PREDICTED_VALUES_LOWERBOUND = Gauge('predicted_values_lowerbound', 'Lower bound for forecasted prophet value', ['time_stamp'])
-PREDICTED_VALUES_UPPERBOUND = Gauge('predicted_values_upperbound', 'Upper bound for forecasted prophet value', ['time_stamp'])
+PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['value_type'])
 
 # A counter to count the total number of HTTP requests
 REQUESTS = Counter('http_requests_total', 'Total HTTP Requests (count)', ['method', 'endpoint', 'status_code'])
@@ -65,8 +63,8 @@ TIMINGS = Histogram('http_request_duration_seconds', 'HTTP request latency (seco
 PACKAGES_NEW = Gauge('packages_newly_added', 'Packages newly added')
 
 #Store the different columns of the pandas dataframe
-yhatupper = data['yhat_upper']
-yhatlower = data['yhat_lower']
+yhat_upper = data['yhat_upper']
+yhat_lower = data['yhat_lower']
 yhat = data['yhat']
 #Converting timestamp to Unix time
 print("Data Timestamp: \n",data['timestamp'].head())
@@ -80,14 +78,25 @@ current_time = datetime.now()
 print("The current time is: \n")
 print(current_time)
 
+<<<<<<< HEAD
+#converting to np.int64 type
+# current_time = np.int64(current_time)
+
+
+
+
+=======
 #Find the index matching with the current timestamp
 index = data.index.get_loc(current_time, method='nearest')
 
 print("The matching index found:", index, "nearest_timestamp is: ", data.iloc[[index]])
 #Set the Gauge with the predicted values of the index found
-PREDICTED_VALUES.labels(time_stamp=timestamp[index]).set(yhat[index])
-PREDICTED_VALUES_LOWERBOUND.labels(time_stamp=timestamp[index]).set(yhatlower[index])
-PREDICTED_VALUES_UPPERBOUND.labels(time_stamp=timestamp[index]).set(yhatupper[index])
+
+PREDICTED_VALUES.labels(value_type='yhat').set(yhat[index])
+PREDICTED_VALUES.labels(value_type='yhat_upper').set(yhat_upper[index])
+PREDICTED_VALUES.labels(value_type='yhat_lower').set(yhat_lower[index])
+>>>>>>> a7aa221bd922f2f981311b785b73e2660737be7f
+
 
 # Standard Flask route stuff.
 @app.route('/')
@@ -117,7 +126,17 @@ def countpkg():
 
 @app.route('/metrics')
 def metrics():
-	return generate_latest(REGISTRY)
+    #Find the index matching with the current timestamp
+    global data
+    index = data.index.get_loc(datetime.now(), method='nearest')
+
+    print("The matching index found:", index, "nearest_timestamp is: ", data.iloc[[index]])
+    #Set the Gauge with the predicted values of the index found
+    
+    PREDICTED_VALUES.labels(value_type='yhat').set(yhat[index])
+    PREDICTED_VALUES.labels(value_type='yhat_upper').set(yhat_upper[index])
+    PREDICTED_VALUES.labels(value_type='yhat_lower').set(yhat_lower[index])
+    return generate_latest(REGISTRY)
 
 @app.route('/prometheus')
 @IN_PROGRESS.track_inprogress()
