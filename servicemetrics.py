@@ -48,7 +48,9 @@ data = data[~data.index.duplicated()]
 data = data.sort_values(by=['timestamp'])
 
 #A gauge set for the predicted values
-PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['yhat_lower', 'yhat_upper', 'time_stamp'])
+PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['time_stamp'])
+PREDICTED_VALUES_LOWERBOUND = Gauge('predicted_values_lowerbound', 'Lower bound for forecasted prophet value', ['timestamp'])
+PREDICTED_VALUES_UPPERBOUND = Gauge('predicted_values_upperbound', 'Upper bound for forecasted prophet value', ['timestamp'])
 
 # A counter to count the total number of HTTP requests
 REQUESTS = Counter('http_requests_total', 'Total HTTP Requests (count)', ['method', 'endpoint', 'status_code'])
@@ -83,7 +85,9 @@ index = data.index.get_loc(current_time, method='nearest')
 
 print("The matching index found:", index, "nearest_timestamp is: ", data.iloc[[index]])
 #Set the Gauge with the predicted values of the index found
-PREDICTED_VALUES.labels(yhat_lower=yhatlower[index], yhat_upper=yhatupper[index], time_stamp=timestamp[index]).set(yhat[index])
+PREDICTED_VALUES.labels(time_stamp=timestamp[index]).set(yhat[index])
+PREDICTED_VALUES_LOWERBOUND.labels(time_stamp=timestamp[index]).set(yhatlower[index])
+PREDICTED_VALUES_UPPERBOUND.labels(time_stamp=timestamp[index]).set(yhatupper[index])
 
 # Standard Flask route stuff.
 @app.route('/')
