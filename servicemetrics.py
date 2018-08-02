@@ -49,8 +49,8 @@ data = data.sort_values(by=['timestamp'])
 
 #A gauge set for the predicted values
 PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['time_stamp'])
-PREDICTED_VALUES_LOWERBOUND = Gauge('predicted_values_lowerbound', 'Lower bound for forecasted prophet value', ['timestamp'])
-PREDICTED_VALUES_UPPERBOUND = Gauge('predicted_values_upperbound', 'Upper bound for forecasted prophet value', ['timestamp'])
+PREDICTED_VALUES_LOWERBOUND = Gauge('predicted_values_lowerbound', 'Lower bound for forecasted prophet value', ['time_stamp'])
+PREDICTED_VALUES_UPPERBOUND = Gauge('predicted_values_upperbound', 'Upper bound for forecasted prophet value', ['time_stamp'])
 
 # A counter to count the total number of HTTP requests
 REQUESTS = Counter('http_requests_total', 'Total HTTP Requests (count)', ['method', 'endpoint', 'status_code'])
