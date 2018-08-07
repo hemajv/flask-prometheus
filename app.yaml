@@ -12,8 +12,7 @@ parameters:
   value: 'prometheus-flask'
   required: true
 - name: GIT_URI
-  value: 'https://github.com/hemajv/flask-prometheus.git'
-  required: true
+  value: 'https://github.com/hemajv/flask-prometheus'
 
 objects:
 - apiVersion: v1
@@ -26,8 +25,6 @@ objects:
     dockerImageRepository: ${APPLICATION_NAME}
     tags:
     - name: latest
-    lookupPolicy:
-      local: true
 
 - apiVersion: v1
   kind: BuildConfig
@@ -63,7 +60,7 @@ objects:
     - imageChange: {}
       type: ImageChange
     - type: ConfigChange
-    
+
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -85,16 +82,12 @@ objects:
       spec:
         containers:
         - envFrom:
-            - secretRef:
-                name: ${APPLICATION_NAME}
           image: ${APPLICATION_NAME}
           imagePullPolicy: IfNotPresent
           name: ${APPLICATION_NAME}
           resources: {}
           terminationMessagePath: /dev/termination-log
-       dnsPolicy: ClusterFirst
-       estartPolicy: Always
-     triggers:
+    triggers:
     - imageChangeParams:
         automatic: true
         containerNames:
@@ -104,7 +97,7 @@ objects:
           name: ${APPLICATION_NAME}:latest
       type: ImageChange
     - type: ConfigChange
-    
+
 - apiVersion: v1
   kind: Service
   metadata:
