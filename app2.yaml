@@ -370,14 +370,25 @@ objects:
   data:
     alerting.rules: |
       groups:
-      - name: example-rules
+      - name: anamoly-detection-rules
         interval: 30s # defaults to global interval
         rules:
-        - alert: NoPackages
-          expr: packages_newly_added == 0
+        - alert: AnamolyDetection
+          expr: kubelet_docker_operations_latency_microseconds{'__name__': 'kubelet_docker_operations_latency_microseconds', 
+          'beta_kubernetes_io_arch': 'amd64', 'beta_kubernetes_io_os': 'linux', 
+          'instance': 'cpt-0001.datahub.prod.upshift.rdu2.redhat.com', 'job': 'kubernetes-nodes', 
+          'kubernetes_io_hostname': 'cpt-0001.datahub.prod.upshift.rdu2.redhat.com', 
+          'node_role_kubernetes_io_compute': 'true', 'operation_type': 'create_container', 
+          'provider': 'rhos', 'quantile': '0.5', 'region': 'compute', 'size': 'small'} < predicted_values{value_type="yhat_upper"}
+          and kubelet_docker_operations_latency_microseconds{'__name__': 'kubelet_docker_operations_latency_microseconds', 
+          'beta_kubernetes_io_arch': 'amd64', 'beta_kubernetes_io_os': 'linux', 
+          'instance': 'cpt-0001.datahub.prod.upshift.rdu2.redhat.com', 'job': 'kubernetes-nodes', 
+          'kubernetes_io_hostname': 'cpt-0001.datahub.prod.upshift.rdu2.redhat.com', 
+          'node_role_kubernetes_io_compute': 'true', 'operation_type': 'create_container', 
+          'provider': 'rhos', 'quantile': '0.5', 'region': 'compute', 'size': 'small'} > predicted_values{value_type="yhat_lower"}
           annotations:
-            summary: "No packages were added"
-            description: "No packages were added in the past 1 minute"
+            summary: "Metric value out of bounds"
+            description: "The current metric value is out of bounds of the prophet predicted values"
 
     prometheus.yml: |
       rule_files:
