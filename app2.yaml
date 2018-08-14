@@ -34,9 +34,9 @@ parameters:
 - description: Datahub Services Channel Webhook
   name: AIOPS_ALERTS_WEBHOOK
   value: https://chat.openshift.io/hooks/mfizjwomubnbfdhzawh6x6679w
-- description: Prophet Predicted Endpoint
-  name: PROPHET_ENDPOINT
-  value: http://train-prophet-job-us-west-1-aiops-prod-prometheus-predict.cloud.paas.upshift.redhat.com/
+- description: AI Ops Endpoint
+  name: AIOPS_ENDPOINT
+  value: http://train-prophet-job-us-west-1-aiops-prod-prometheus-predict.cloud.paas.upshift.redhat.com
 
 objects:
 # Authorize the prometheus service account to read data about the cluster
@@ -373,22 +373,18 @@ objects:
       - name: anamoly-detection-rules
         interval: 30s # defaults to global interval
         rules:
-        - alert: AnamolyDetection
-          expr: kubelet_docker_operations_latency_microseconds{'__name__': 'kubelet_docker_operations_latency_microseconds', 
-          'beta_kubernetes_io_arch': 'amd64', 'beta_kubernetes_io_os': 'linux', 
-          'instance': 'cpt-0001.datahub.prod.upshift.rdu2.redhat.com', 'job': 'kubernetes-nodes', 
-          'kubernetes_io_hostname': 'cpt-0001.datahub.prod.upshift.rdu2.redhat.com', 
-          'node_role_kubernetes_io_compute': 'true', 'operation_type': 'create_container', 
-          'provider': 'rhos', 'quantile': '0.5', 'region': 'compute', 'size': 'small'} < predicted_values{value_type="yhat_upper"}
-          and kubelet_docker_operations_latency_microseconds{'__name__': 'kubelet_docker_operations_latency_microseconds', 
-          'beta_kubernetes_io_arch': 'amd64', 'beta_kubernetes_io_os': 'linux', 
-          'instance': 'cpt-0001.datahub.prod.upshift.rdu2.redhat.com', 'job': 'kubernetes-nodes', 
-          'kubernetes_io_hostname': 'cpt-0001.datahub.prod.upshift.rdu2.redhat.com', 
-          'node_role_kubernetes_io_compute': 'true', 'operation_type': 'create_container', 
-          'provider': 'rhos', 'quantile': '0.5', 'region': 'compute', 'size': 'small'} > predicted_values{value_type="yhat_lower"}
+        - alert: MetricOutofProphetBounds
+          expr: kubelet_docker_operations_latency_microseconds > predicted_values_prophet_yhat_upper 
+                or kubelet_docker_operations_latency_microseconds < predicted_values_prophet_yhat_lower
           annotations:
             summary: "Metric value out of bounds"
-            description: "The current metric value is out of bounds of the prophet predicted values"
+            description: "The current metric value is out of bounds of the prophet model predicted values"
+        - alert: MetricOutofProphetBounds
+          expr: kubelet_docker_operations_latency_microseconds > predicted_values_fourier_yhat_upper 
+                or kubelet_docker_operations_latency_microseconds < predicted_values_fourier_yhat_lower
+          annotations:
+            summary: "Metric value out of bounds"
+            description: "The current metric value is out of bounds of the fourier model predicted values"
 
     prometheus.yml: |
       rule_files:
@@ -631,10 +627,10 @@ objects:
           action: keep
           regex: openshift-template-service-broker;apiserver;https
 
-      - job_name: 'prophet'
+      - job_name: 'AI Ops'
         static_configs:
           - targets:
-            - ${PROPHET_ENDPOINT}
+            - ${AIOPS_ENDPOINT}
 
       alerting:
         alertmanagers:
