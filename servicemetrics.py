@@ -5,7 +5,7 @@ import sys
 import bz2
 import pandas
 import argparse
-from flask import Flask, render_template_string, abort
+from flask import Flask, render_template_string, abort, Response
 from datetime import datetime
 from prometheus_client import CollectorRegistry, generate_latest, REGISTRY, Counter, Gauge, Histogram
 
@@ -100,7 +100,7 @@ def metrics():
     PREDICTED_VALUES.labels(value_type='yhat', time_stamp=data['timestamp'][index]).set(data['yhat'][index])
     PREDICTED_VALUES.labels(value_type='yhat_upper', time_stamp=data['timestamp'][index]).set(data['yhat_upper'][index])
     PREDICTED_VALUES.labels(value_type='yhat_lower', time_stamp=data['timestamp'][index]).set(data['yhat_lower'][index])
-    return generate_latest(REGISTRY)
+    return Response(generate_latest(REGISTRY).decode("utf-8"), content_type='text; charset=utf-8')
 
 
 @app.route('/prometheus')
