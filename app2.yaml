@@ -36,7 +36,7 @@ parameters:
   value: https://chat.openshift.io/hooks/mfizjwomubnbfdhzawh6x6679w
 - description: AI Ops Endpoint
   name: AIOPS_ENDPOINT
-  value: http://train-prophet-job-us-west-1-aiops-prod-prometheus-predict.cloud.paas.upshift.redhat.com
+  value: http://train-prom-dh-prod-aiops-prod-prometheus-predict.cloud.paas.upshift.redhat.com
 
 objects:
 # Authorize the prometheus service account to read data about the cluster
