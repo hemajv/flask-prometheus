@@ -48,7 +48,7 @@ data = data[~data.index.duplicated()]
 data = data.sort_values(by=['timestamp'])
 
 #A gauge set for the predicted values
-PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['value_type'])
+PREDICTED_VALUES = Gauge('predicted_values', 'Forecasted values from Prophet', ['value_type', 'time_stamp'])
 
 # A counter to count the total number of HTTP requests
 REQUESTS = Counter('http_requests_total', 'Total HTTP Requests (count)', ['method', 'endpoint', 'status_code'])
@@ -61,23 +61,6 @@ TIMINGS = Histogram('http_request_duration_seconds', 'HTTP request latency (seco
 
 # A gauge to count the number of packages newly added
 PACKAGES_NEW = Gauge('packages_newly_added', 'Packages newly added')
-
-#Store the different columns of the pandas dataframe
-yhat_upper = data['yhat_upper']
-yhat_lower = data['yhat_lower']
-yhat = data['yhat']
-#Converting timestamp to Unix time
-print("Data Timestamp: \n",data['timestamp'].head())
-timestamp = data['timestamp']
-print(data.head())
-
-print(data.tail())
-
-#Find the current timestamp
-current_time = datetime.now()
-print("The current time is: \n")
-print(current_time)
-
 
 # Standard Flask route stuff.
 @app.route('/')
@@ -105,6 +88,7 @@ def countpkg():
 			PACKAGES_NEW.inc()
 	return render_template_string('Counting packages....')
 
+
 @app.route('/metrics')
 def metrics():
     #Find the index matching with the current timestamp
@@ -113,10 +97,11 @@ def metrics():
     print("The current time is: ",datetime.now())
     print("The matching index found:", index, "nearest_timestamp is: ", data.iloc[[index]])
     #Set the Gauge with the predicted values of the index found
-    PREDICTED_VALUES.labels(value_type='yhat').set(data['yhat'][index])
-    PREDICTED_VALUES.labels(value_type='yhat_upper').set(data['yhat_upper'][index])
-    PREDICTED_VALUES.labels(value_type='yhat_lower').set(data['yhat_lower'][index])
+    PREDICTED_VALUES.labels(value_type='yhat', time_stamp=data['timestamp'][index]).set(data['yhat'][index])
+    PREDICTED_VALUES.labels(value_type='yhat_upper', time_stamp=data['timestamp'][index]).set(data['yhat_upper'][index])
+    PREDICTED_VALUES.labels(value_type='yhat_lower', time_stamp=data['timestamp'][index]).set(data['yhat_lower'][index])
     return generate_latest(REGISTRY)
+
 
 @app.route('/prometheus')
 @IN_PROGRESS.track_inprogress()
@@ -124,6 +109,7 @@ def metrics():
 def display():
 	REQUESTS.labels(method='GET', endpoint="/metrics", status_code=200).inc()
 	return generate_latest(REGISTRY)
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
