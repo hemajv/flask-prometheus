@@ -374,14 +374,14 @@ objects:
         interval: 30s # defaults to global interval
         rules:
         - alert: MetricOutofProphetBounds
-          expr: kubelet_docker_operations_latency_microseconds > predicted_values_prophet_yhat_upper 
-                or kubelet_docker_operations_latency_microseconds < predicted_values_prophet_yhat_lower
+          expr: kubelet_docker_operations_latency_microseconds > ignoring(job, instance) predicted_values_prophet_yhat_upper 
+                or kubelet_docker_operations_latency_microseconds < ignoring(job, instance) predicted_values_prophet_yhat_lower
           annotations:
             summary: "Metric value out of bounds"
             description: "The current metric value is out of bounds of the prophet model predicted values"
         - alert: MetricOutofProphetBounds
-          expr: kubelet_docker_operations_latency_microseconds > predicted_values_fourier_yhat_upper 
-                or kubelet_docker_operations_latency_microseconds < predicted_values_fourier_yhat_lower
+          expr: kubelet_docker_operations_latency_microseconds > ignoring(job, instance) predicted_values_fourier_yhat_upper 
+                or kubelet_docker_operations_latency_microseconds < ignoring(job, instance) predicted_values_fourier_yhat_lower
           annotations:
             summary: "Metric value out of bounds"
             description: "The current metric value is out of bounds of the fourier model predicted values"
